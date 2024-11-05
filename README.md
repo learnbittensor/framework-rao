@@ -147,7 +147,7 @@ class AccountValuePlot(BasePlot):
         
         ax = PlotStyle.setup_axis(
             plt.subplot(1, 1, 1),
-            'Account Balances Over Time',
+            'Account Values Over Time',
             'Block Number',
             'Full Balance'
         )
