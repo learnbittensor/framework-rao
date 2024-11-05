@@ -1,8 +1,33 @@
-from .models import Subnet, Account, Trade
 from .subtensor import Subtensor
+import importlib
+import re
+from .plotting import BasePlot
+from typing import Dict, Any, Optional, List
+import matplotlib.pyplot as plt
 
 
-def run_simulation(config):
+def parse_plot_argument(plot_arg: str) -> tuple[str, Optional[List[Any]]]:
+    match = re.match(r'([^[]+)(?:\[(.*)\])?', plot_arg)
+    if not match:
+        return plot_arg, None
+    
+    module_name, params_str = match.groups()
+    if params_str:
+        params = []
+        for param in params_str.split(','):
+            param = param.strip()
+            try:
+                params.append(int(param))
+            except ValueError:
+                try:
+                    params.append(float(param))
+                except ValueError:
+                    params.append(param)
+        return module_name, params
+    return module_name, None
+
+
+def run_simulation(config: Dict[str, Any], plot_modules: Optional[List[str]] = None):
     blocks = config['blocks']
     n_steps = config['n_steps']
     subnets = config['subnets']
@@ -26,3 +51,23 @@ def run_simulation(config):
     )
 
     subtensor.run_simulation()
+
+    if plot_modules:
+        plotters = []
+        for plot_arg in plot_modules:
+            try:
+                module_name, params = parse_plot_argument(plot_arg)
+                module = importlib.import_module(module_name)
+                plot_class = [obj for obj in module.__dict__.values() 
+                             if isinstance(obj, type) and issubclass(obj, BasePlot) 
+                             and obj != BasePlot][-1]
+                plotter = plot_class("data", config["blocks"], config["n_steps"])
+                if params:
+                    plotter.plot(*params)
+                else:
+                    plotter.plot()
+                plotters.append(plotter)
+            except Exception as e:
+                print(f"Error running plot {plot_arg}: {str(e)}")
+        
+        plt.show()
