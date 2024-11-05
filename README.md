@@ -6,8 +6,6 @@ A simulation framework for modeling and analyzing subnet interactions, account b
 
 ## Requirements
 
-To run and use, ensure you have the following installed:
-
 - **Python 3.7+**
 - `matplotlib`
 - `numpy`
@@ -16,16 +14,12 @@ To run and use, ensure you have the following installed:
 ## Installation
 
 1. **Clone the Repository:**
-
 ```bash
 git clone https://github.com/learnbittensor/rao-simulation.git
 cd rao-simulation
 ```
 
 2. **Install Dependencies:**
-
-It's recommended to use a virtual environment:
-
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
@@ -34,61 +28,37 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Running Simulations
+### Basic Simulation Example
 
-1. **Configure the Simulation:**
-
-Go to the `./simulations` directory and modify or create a simulation configuration as needed. An example configuration is provided in `example.py`.
-
-2. **Execute the Simulation:**
-
-Run the simulation script to generate the JSON data files.
-
-`python3 -m simulations.example`
-
-*This will generate the following JSON files in the `/data` directory:*
-
-- `accounts.json`
-- `subnets.json`
-- `subtensor.json`
-- `trades.json`
-
-## Example Simulation Configuration
-
-Here's an example of how a simulation configuration (example.py) is structured:
+Create a simple simulation in `simulations/simple.py`:
 
 ```python
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
-from src.plotting import plot_simulation_results
+import argparse
 
-blocks = 13140000
-n_steps = 30
+blocks = 1000  # Run for 1000 blocks
+n_steps = 10   # Log data every 100 blocks
 
+# Create two subnets: one root and one regular
 subnets = [
-    Subnet(id=0, tao_in=1000.0, alpha_in=1000.0, alpha_out=1000.0, is_root=True),
-    *[Subnet(id=i, tao_in=1000.0, alpha_in=1000.0, alpha_out=1000.0)
-      for i in range(1, 4)],
+    Subnet(id=0, tao_in=100.0, alpha_in=100.0, alpha_out=100.0, is_root=True),
+    Subnet(id=1, tao_in=100.0, alpha_in=100.0, alpha_out=100.0)
 ]
 
-accounts = [
-    Account(id=1, free_balance=100.0, alpha_stakes={0:100.0}, registered_subnets=[0, 1, 2, 3]),
-    Account(id=2, free_balance=100.0, alpha_stakes={1:33.33, 2:33.33, 3:33.33}, registered_subnets=[1, 2, 3]),
+# Create two accounts with initial stak[
+    Account(id=1, free_balance=50.0, alpha_stakes={0: 50.0}, registered_subnets=[0, 1]),
+    Account(id=2, free_balance=0.0, alpha_stakes={1: 100.0}, registered_subnets=[1])
 ]
 
+# Define some trades
 trades = [
-    Trade(block=13140000, account_id=1, subnet_id=0, action='sell', amount='all'),
-    Trade(block=13140000, account_id=1, subnet_id=1, action='sell', amount='all'),
-    Trade(block=13140000, account_id=1, subnet_id=2, action='sell', amount='all'),
-    Trade(block=13140000, account_id=1, subnet_id=3, action='sell', amount='all'),
-
-    Trade(block=13140000, account_id=2, subnet_id=1, action='sell', amount='all'),
-    Trade(block=13140000, account_id=2, subnet_id=2, action='sell', amount='all'),
-    Trade(block=13140000, account_id=2, subnet_id=3, action='sell', amount='all'),
+    Trade(block=500, account_id=1, subnet_id=0, action='sell', amount='50%'),
+    Trade(block=750, account_id=2, subnet_id=1, action='sell', amount='all')
 ]
 
 config = {
-    "blocks": blocks + 1,
+    "blocks": blocks,
     "n_steps": n_steps,
     "subnets": subnets,
     "accounts": accounts,
@@ -100,17 +70,69 @@ config = {
 }
 
 if __name__ == "__main__":
-    run_simulation(config)
-    plot_simulation_results("data", blocks, n_steps)
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+
+    run_simulation(config, args.plots if args.plots else [])
 ```
 
-## Running the Project
+### Basic Plot Example
 
-1. **Run the Simulation:**
+Create a simple plot in `plots/account_balance.py`:
 
-`python3 -m simulations.example`
+```python
+from src.plotting import BasePlot, PlotStyle
+import matplotlib.pyplot as plt
+import numpy as np
 
-*This will execute the simulation with the defined configuration and generate JSON data files in the data/ directory.*
+class AccountBalancePlot(BasePlot):
+    def plot(self, account_id: int = 1):
+        fig = PlotStyle.setup_plot_style()
+        
+        # Get data for specific account
+        account_data = self.accounts_df[self.accounts_df['account_id'] == account_id]
+        
+        # Create plot
+        ax = PlotStyle.setup_axis(
+            plt.subplot(1, 1, 1),
+            f'Account {account_id} Balance Over Time',
+            'Block Number',
+            'Full Balance'
+        )
+        
+        # Plot balance
+        ax.plot(account_data['block'], 
+                account_data['market_value'],
+                color='cyan',
+                label='Full Balance')
+        
+        PlotStyle.create_legend(ax)
+        plt.tight_layout()
+```
+
+### Running Simulations and Plots
+
+1. **Run simulation only:**
+```bash
+python3 -m simulations.simple
+```
+
+2. **Run simulation with specific plot:**
+```bash
+python3 -m simulations.simple --plots plots.account_balance
+```
+
+3. **Run simulation with plot parameters (in this example the account id to be
+   tracked):**
+```bash
+python3 -m simulations.simple --plots 'plots.account_balance[1]'
+```
+
+4. **Run simulation with multiple plots:**
+```bash
+python3 -m simulations.simple --plots 'plots.account_balance[1]' 'plots.account_balance[2]'
+```
+**Note***: When using plot parameters (square brackets), wrap the argument in quotes to prevent shell interpretation.
 
 ## License
 
