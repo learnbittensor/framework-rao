@@ -1,6 +1,5 @@
 from src.plotting import BasePlot, PlotStyle
 import matplotlib.pyplot as plt
-import numpy as np
 
 class AccountBalancePlot(BasePlot):
     def plot(self, account_id: int = 1):
@@ -12,16 +11,16 @@ class AccountBalancePlot(BasePlot):
         # Create plot
         ax = PlotStyle.setup_axis(
             plt.subplot(1, 1, 1),
-            f'Account {account_id} Balance Over Time',
+            f'Account {account_id} Value Over Time',
             'Block Number',
-            'Full Balance'
+            'Market Value'
         )
         
         # Plot balance
         ax.plot(account_data['block'], 
                 account_data['market_value'],
                 color='cyan',
-                label='Full Balance')
+                label='Market Value')
         
         PlotStyle.create_legend(ax)
         plt.tight_layout()
