@@ -124,4 +124,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- Modified and reused code from the simulation notebook of Const. (Thank you) <3
+Modified and reused code from the simulation notebook of Const. (Thank you) <3
