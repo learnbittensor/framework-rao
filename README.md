@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
 ### Basic Plot Example
 
-Create a simple plot in `plots/account_balance.py`:
+Create a simple plot in `plots/account_value.py`:
 
 ```python
 from src.plotting import BasePlot, PlotStyle
@@ -120,18 +120,18 @@ python3 -m simulations.simple
 
 2. **Run simulation with specific plot:**
 ```bash
-python3 -m simulations.simple --plots plots.account_balance
+python3 -m simulations.simple --plots plots.dashboard
 ```
 
 3. **Run simulation with plot parameters (in this example the account id to be
    tracked):**
 ```bash
-python3 -m simulations.simple --plots 'plots.account_balance[1]'
+python3 -m simulations.simple --plots 'plots.account_value[1]'
 ```
 
 4. **Run simulation with multiple plots:**
 ```bash
-python3 -m simulations.simple --plots 'plots.account_balance[1]' 'plots.account_balance[2]'
+python3 -m simulations.simple --plots 'plots.account_value[1]' 'plots.account_value[2]'
 ```
 **Note***: When using plot parameters (square brackets), wrap the argument in quotes to prevent shell interpretation.
 
