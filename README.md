@@ -57,29 +57,6 @@ Run the simulation script to generate the JSON data files.
 
 ---
 
-## Directory Structure
-
-project/
-├── data/
-│   ├── accounts.json
-│   ├── subnets.json
-│   ├── subtensor.json
-│   └── trades.json
-├── src/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── subtensor.py
-│   ├── utils.py
-│   ├── simulation.py
-│   └── plotting.py
-├── simulations/
-│   ├── example.py
-│   └── random.py
-├── requirements.txt
-└── README.md
-
----
-
 ## Example Simulation Configuration
 
 Here's an example of how a simulation configuration (example.py) is structured:
