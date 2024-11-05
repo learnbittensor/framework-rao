@@ -1,6 +1,6 @@
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
-from src.plotting import plot_simulation_results
+import argparse
 
 blocks = 13140000
 n_steps = 30
@@ -40,5 +40,8 @@ config = {
 }
 
 if __name__ == "__main__":
-    run_simulation(config)
-    plot_simulation_results("data", blocks, n_steps)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--plots', nargs='+', help='List of plot modules to run')
+    args = parser.parse_args()
+
+    run_simulation(config, args.plots if args.plots else [])

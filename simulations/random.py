@@ -1,6 +1,6 @@
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
-from src.plotting import plot_simulation_results
+import argparse
 
 from typing import List
 from collections import defaultdict
@@ -10,7 +10,6 @@ def generate_trades(
     subnets: List[Subnet],
     accounts: List[Account], 
     blocks: int,
-    n_steps: int
 ) -> List[Trade]:
     trades = []
     
@@ -119,7 +118,7 @@ def generate_trades(
     return sorted(trades, key=lambda x: (x.block, x.account_id))
 
 blocks = 216000
-n_steps = 7200
+n_steps = 12
 
 subnets = [
     Subnet(id=0, tao_in=1000.0, alpha_in=1000.0, alpha_out=1000.0, is_root=True),
@@ -134,7 +133,7 @@ accounts = [
               registered_subnets=subnet_ids) for i in range(1, 3)],
 ]
 
-trades = generate_trades(subnets, accounts, blocks, n_steps)
+trades = generate_trades(subnets, accounts, blocks)
 
 config = {
     "blocks": blocks,
@@ -149,5 +148,8 @@ config = {
 }
 
 if __name__ == "__main__":
-    run_simulation(config)
-    plot_simulation_results("data", blocks, n_steps)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--plots', nargs='+', help='List of plot modules to run')
+    args = parser.parse_args()
+
+    run_simulation(config, args.plots if args.plots else [])

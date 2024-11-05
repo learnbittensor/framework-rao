@@ -1,6 +1,6 @@
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
-from src.plotting import plot_simulation_results
+import argparse
 
 blocks = 3600
 n_steps = 10
@@ -15,11 +15,9 @@ accounts = [
     Account(id=2, free_balance=0.0, alpha_stakes={1: 100.0}, registered_subnets=[1]),
 ]
 
-#trades = []
 trades = [
     Trade(block=blocks, account_id=1, subnet_id=0, action='sell', amount='all'),
     Trade(block=blocks, account_id=1, subnet_id=1, action='sell', amount='all'),
-
     Trade(block=blocks, account_id=2, subnet_id=1, action='sell', amount='all'),
 ]
 
@@ -36,5 +34,8 @@ config = {
 }
 
 if __name__ == "__main__":
-    run_simulation(config)
-    plot_simulation_results("data", blocks, n_steps)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--plots', nargs='+', help='List of plot modules to run')
+    args = parser.parse_args()
+
+    run_simulation(config, args.plots if args.plots else [])
