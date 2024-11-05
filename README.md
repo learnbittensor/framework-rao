@@ -1,5 +1,7 @@
 ## RAO Simulation - "Framework"
 
+![Thumbail of RAO Simulation](media/thumbnail.png)
+
 A simulation framework for modeling and analyzing subnet interactions, account balances, and trade activities within the RAO network. The project includes modules for running simulations, storing results, and visualizing outcomes through plots.
 
 ## Requirements
