@@ -37,6 +37,7 @@ config = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--plots', nargs='+', help='List of plot modules to run')
     args = parser.parse_args()
 
     run_simulation(config, args.plots if args.plots else [])
