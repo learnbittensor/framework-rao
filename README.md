@@ -17,14 +17,16 @@ To run and use, ensure you have the following installed:
 
 1. **Clone the Repository:**
 
-- `git clone https://github.com/learnbittensor/rao-simulation.git`
-- `cd rao-simulation`
+```bash
+git clone https://github.com/learnbittensor/rao-simulation.git
+cd rao-simulation
+```
 
 2. **Install Dependencies:**
 
 It's recommended to use a virtual environment:
 
-```python
+```bash
 python3 -m venv .venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -55,7 +57,7 @@ Run the simulation script to generate the JSON data files.
 
 Here's an example of how a simulation configuration (example.py) is structured:
 
-```
+```python
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
 from src.plotting import plot_simulation_results
