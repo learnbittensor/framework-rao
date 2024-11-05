@@ -1,8 +1,6 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from collections import defaultdict
-import pandas as pd
 from .models import Subnet, Account, Trade
-import json
 from .utils import write_json
 
 
@@ -20,7 +18,7 @@ class Subtensor:
         self.initial_root_weight = root_weight
         self.root_weight = root_weight
         self.blocks = blocks
-        self.n_steps = n_steps
+        self.log_interval = int(blocks/n_steps)
 
     def _organize_trades(self, trades: List[Trade]) -> Dict[int, List[Trade]]:
         trade_dict = defaultdict(list)
@@ -45,30 +43,53 @@ class Subtensor:
         trades_data = []
         subtensor_data = []
 
-        for block in range(0, self.blocks, self.n_steps):
-            block_range = range(block, min(block + self.n_steps, self.blocks))
+        for block in range(self.blocks):
+            #self._update_root_weight(block)
 
-            for b in block_range:
-                # self._update_root_weight(b)
-                if b in self.trade_blocks:
-                    for trade in self.trade_blocks[b]:
-                        self._execute_trade(trade)
-                        trades_data.append({
-                            "block": b,
-                            "account_id": trade.account_id,
-                            "subnet_id": trade.subnet_id,
-                            "action": trade.action,
-                            "amount": trade.amount
-                        })
+            if block in self.trade_blocks:
+                for trade in self.trade_blocks[block]:
+                    self._execute_trade(trade)
+                    trades_data.append({
+                        "block": block,
+                        "account_id": trade.account_id,
+                        "subnet_id": trade.subnet_id,
+                        "action": trade.action,
+                        "amount": trade.amount
+                    })
 
-            self._batch_block_step(self.n_steps)
+            self._process_block_step()
 
-            self._log_state(block + self.n_steps, accounts_data, subnets_data, subtensor_data)
+            if block % self.log_interval == 0 or block == self.blocks - 1:
+                self._log_state(block, accounts_data, subnets_data, subtensor_data)
 
         write_json("data/accounts.json", accounts_data)
         write_json("data/subnets.json", subnets_data)
         write_json("data/trades.json", trades_data)
         write_json("data/subtensor.json", subtensor_data)
+
+    def _process_block_step(self):
+        emit = self._calculate_emission()
+        sum_prices = sum(s.alpha_price() for s in self.subnets.values() if not s.is_root)
+        emission_val = 1
+
+        if sum_prices < 1.0 or not self.balanced:
+            self.tao_supply += emission_val
+
+        for subnet in self.subnets.values():
+            if subnet.is_root:
+                continue
+
+            tao_amount = emit.get(subnet.id, 0.0) * emission_val \
+                if sum_prices < 1.0 or not self.balanced else 0.0
+            alpha_amount = emission_val if sum_prices >= 1.0 and self.balanced else 0.0
+
+            subnet.inject(tao_amount, alpha_amount, emission_val)
+
+            dividends = self._calculate_dividends(subnet.id)
+            for acc_id, div in dividends.items():
+                self.accounts[acc_id].alpha_stakes[subnet.id] = \
+                    self.accounts[acc_id].alpha_stakes.get(subnet.id, 0.0) + \
+                    div * emission_val
 
     def _execute_trade(self, trade: Trade):
         account = self.accounts.get(trade.account_id)
@@ -86,30 +107,6 @@ class Subtensor:
             tao_bought = subnet.unstake(alpha_amount)
             account.alpha_stakes[trade.subnet_id] = account.alpha_stakes.get(trade.subnet_id, 0.0) - alpha_amount
             account.free_balance += tao_bought
-
-    def _batch_block_step(self, n_blocks: int):
-        emit = self._calculate_emission()
-        sum_prices = sum(s.alpha_price() for s in self.subnets.values() if not s.is_root)
-        emission_val = 1
-
-        if sum_prices < 1.0 or not self.balanced:
-            self.tao_supply += n_blocks * emission_val
-
-        for subnet in self.subnets.values():
-            if subnet.is_root:
-                continue
-
-            tao_amount = emit.get(subnet.id, 0.0) * n_blocks * emission_val \
-                if sum_prices < 1.0 or not self.balanced else 0.0
-            alpha_amount = n_blocks * emission_val if sum_prices >= 1.0 and self.balanced else 0.0
-
-            subnet.inject(tao_amount, alpha_amount, emission_val * n_blocks)
-
-            dividends = self._calculate_dividends(subnet.id)
-            for acc_id, div in dividends.items():
-                self.accounts[acc_id].alpha_stakes[subnet.id] = \
-                    self.accounts[acc_id].alpha_stakes.get(subnet.id, 0.0) + \
-                    div * n_blocks * emission_val
 
     def _calculate_emission(self) -> Dict[int, float]:
         emission = {s.id: s.tao_in for s in self.subnets.values() if not s.is_root}
@@ -160,17 +157,23 @@ class Subtensor:
                     if account.alpha_stakes.get(subnet.id, 0.0) > 0
                 )
             )
+
             accounts_data.append({
                 "block": block,
                 "account_id": account.id,
                 "free_balance": account.free_balance,
                 "market_value": market_value,
-                "alpha_stakes": account.alpha_stakes.copy()
+                "alpha_stakes": account.alpha_stakes.copy(),
             })
 
         current_emissions = self._calculate_emission()
 
         for subnet in self.subnets.values():
+            if not subnet.is_root:
+                dividends = self._calculate_dividends(subnet.id)
+            else:
+                dividends = {}
+            
             subnets_data.append({
                 "block": block,
                 "subnet_id": subnet.id,
@@ -178,12 +181,13 @@ class Subtensor:
                 "alpha_in": subnet.alpha_in,
                 "alpha_out": subnet.alpha_out,
                 "exchange_rate": subnet.alpha_price(),
-                "emission_rate": current_emissions.get(subnet.id, 0.0)
+                "emission_rate": current_emissions.get(subnet.id, 0.0),
+                "dividends": dividends
             })
 
-        sum_prices = sum(s.alpha_price() for s in self.subnets.values() if not s.is_root)
-        subtensor_data.append({
-            "block": block,
-            "tao_supply": self.tao_supply,
-            "sum_prices": sum_prices
-        })
+            sum_prices = sum(s.alpha_price() for s in self.subnets.values() if not s.is_root)
+            subtensor_data.append({
+                "block": block,
+                "tao_supply": self.tao_supply,
+                "sum_prices": sum_prices
+            })
