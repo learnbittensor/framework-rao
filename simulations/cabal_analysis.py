@@ -3,7 +3,7 @@ from src.simulation import run_simulation
 from src.plotting import plot_simulation_results
 
 blocks = 13140000
-n_steps = 547500
+n_steps = 24
 
 
 subnets = [
@@ -17,8 +17,8 @@ accounts = [
 ]
 
 trades = [
-    Trade(block=0, account_id=1, subnet_id=1, action='stake', amount='all'),
-    Trade(block=0, account_id=2, subnet_id=2, action='stake', amount='all'),
+    Trade(block=0, account_id=1, subnet_id=1, action='buy', amount='all'),
+    Trade(block=0, account_id=2, subnet_id=2, action='buy', amount='all'),
 ]
 
 for block in range(blocks):
@@ -55,7 +55,7 @@ for block in range(blocks):
     ))
 
 config = {
-    "blocks": blocks,
+    "blocks": blocks + 1,
     "n_steps": n_steps,
     "subnets": subnets,
     "accounts": accounts,

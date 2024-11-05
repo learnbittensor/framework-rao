@@ -2,8 +2,8 @@ from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
 from src.plotting import plot_simulation_results
 
-blocks = 13140001
-n_steps = 547500
+blocks = 13140000
+n_steps = 30
 
 subnets = [
     Subnet(id=0, tao_in=1000.0, alpha_in=1000.0, alpha_out=1000.0, is_root=True),
@@ -12,17 +12,11 @@ subnets = [
 ]
 
 accounts = [
-    Account(id=1, free_balance=100.0, registered_subnets=[0, 1, 2, 3], alpha_stakes={}),
-    Account(id=2, free_balance=100.0, registered_subnets=[1, 2, 3], alpha_stakes={}),
+    Account(id=1, free_balance=100.0, alpha_stakes={0:100.0}, registered_subnets=[0, 1, 2, 3]),
+    Account(id=2, free_balance=100.0, alpha_stakes={1:33.33, 2:33.33, 3:33.33}, registered_subnets=[1, 2, 3]),
 ]
 
 trades = [
-    Trade(block=0, account_id=1, subnet_id=0, action='buy', amount='all'),
-
-    Trade(block=0, account_id=2, subnet_id=1, action='buy', amount='33.3'),
-    Trade(block=0, account_id=2, subnet_id=2, action='buy', amount='33.3'),
-    Trade(block=0, account_id=2, subnet_id=3, action='buy', amount='33.3'),
-
     Trade(block=13140000, account_id=1, subnet_id=0, action='sell', amount='all'),
     Trade(block=13140000, account_id=1, subnet_id=1, action='sell', amount='all'),
     Trade(block=13140000, account_id=1, subnet_id=2, action='sell', amount='all'),
@@ -34,7 +28,7 @@ trades = [
 ]
 
 config = {
-    "blocks": blocks,
+    "blocks": blocks + 1,
     "n_steps": n_steps,
     "subnets": subnets,
     "accounts": accounts,
