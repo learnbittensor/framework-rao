@@ -139,9 +139,10 @@ python3 -m simulations.simple --plots plots.dashboard
 python3 -m simulations.simple --plots 'plots.account_value[1]'
 ```
 
-4. **Run simulation with multiple plots:**
+4. **Run simulation with multiple plot parameters (in this example tracking the
+   account value of user 1 and 2:**
 ```bash
-python3 -m simulations.simple --plots 'plots.account_value[1]' 'plots.account_value[2]'
+python3 -m simulations.simple --plots 'plots.account_value[1,2]'
 ```
 **Note***: When using plot parameters (square brackets), wrap the argument in quotes to prevent shell interpretation.
 
