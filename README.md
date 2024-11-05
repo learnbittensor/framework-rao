@@ -2,8 +2,6 @@
 
 A simulation framework for modeling and analyzing subnet interactions, account balances, and trade activities within the RAO network. The project includes modules for running simulations, storing results, and visualizing outcomes through plots.
 
----
-
 ## Requirements
 
 To run and use, ensure you have the following installed:
@@ -12,8 +10,6 @@ To run and use, ensure you have the following installed:
 - `matplotlib`
 - `numpy`
 - `pandas`
-
----
 
 ## Installation
 
@@ -31,8 +27,6 @@ python3 -m venv .venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
-
----
 
 ## Usage
 
@@ -54,8 +48,6 @@ Run the simulation script to generate the JSON data files.
 - `subnets.json`
 - `subtensor.json`
 - `trades.json`
-
----
 
 ## Example Simulation Configuration
 
@@ -114,8 +106,6 @@ if __name__ == "__main__":
     plot_simulation_results("data", blocks, n_steps)
 ```
 
----
-
 ## Running the Project
 
 1. **Run the Simulation:**
@@ -124,13 +114,9 @@ if __name__ == "__main__":
 
 *This will execute the simulation with the defined configuration and generate JSON data files in the data/ directory.*
 
----
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
 
 ## Acknowledgements
 
