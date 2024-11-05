@@ -46,7 +46,8 @@ subnets = [
     Subnet(id=1, tao_in=100.0, alpha_in=100.0, alpha_out=100.0)
 ]
 
-# Create two accounts with initial stak[
+# Create two accounts with initial stake
+accounts = [
     Account(id=1, free_balance=50.0, alpha_stakes={0: 50.0}, registered_subnets=[0, 1]),
     Account(id=2, free_balance=0.0, alpha_stakes={1: 100.0}, registered_subnets=[1])
 ]
