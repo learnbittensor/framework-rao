@@ -1,6 +1,6 @@
-## RAO Simulation - "Framework"
+## RAO Framework
 
-![Thumbail of RAO Simulation](media/thumbnail.png)
+![Thumbail of RAO](media/thumbnail.png)
 
 A simulation framework for modeling and analyzing subnet interactions, account balances, and trade activities within the RAO network. The project includes modules for running simulations, storing results, and visualizing outcomes through plots.
 
@@ -15,8 +15,8 @@ A simulation framework for modeling and analyzing subnet interactions, account b
 
 1. **Clone the Repository:**
 ```bash
-git clone https://github.com/learnbittensor/rao-simulation.git
-cd rao-simulation
+git clone https://github.com/learnbittensor/framework-rao.git
+cd framework-rao
 ```
 
 2. **Install Dependencies:**
