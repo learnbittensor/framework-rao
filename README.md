@@ -1,8 +1,8 @@
-## RAO Simulation - "Framework"
+## RAOcle Framework
 
-![Thumbail of RAO Simulation](media/thumbnail.png)
+![Thumbail of RAOcle](media/thumbnail.png)
 
-A simulation framework for modeling and analyzing subnet interactions, account balances, and trade activities within the RAO network. The project includes modules for running simulations, storing results, and visualizing outcomes through plots.
+RAOcle Framework: A simulation engine for testing Dynamic TAO/RAO strategies in the Bittensor network. Model subnet behavior, analyze trading patterns, and visualize results through the plotting tools.
 
 ## Requirements
 
@@ -15,8 +15,8 @@ A simulation framework for modeling and analyzing subnet interactions, account b
 
 1. **Clone the Repository:**
 ```bash
-git clone https://github.com/learnbittensor/rao-simulation.git
-cd rao-simulation
+git clone https://github.com/learnbittensor/framework-raocle.git
+cd framework-raocle
 ```
 
 2. **Install Dependencies:**
@@ -35,7 +35,6 @@ Create a simple simulation in `simulations/simple.py`:
 ```python
 from src.models import Subnet, Account, Trade
 from src.simulation import run_simulation
-import argparse
 
 blocks = 1000  # Run for 1000 blocks
 n_steps = 10   # Log data every 100 blocks
@@ -71,10 +70,7 @@ config = {
 }
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
-
-    run_simulation(config, args.plots if args.plots else [])
+    run_simulation(config)
 ```
 
 ### Basic Plot Example
@@ -85,27 +81,39 @@ Create a simple plot in `plots/account_value.py`:
 from src.plotting import BasePlot, PlotStyle
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import Optional, List, Union
 
-class AccountBalancePlot(BasePlot):
-    def plot(self, account_id: int = 1):
+class AccountValuePlot(BasePlot):
+    def plot(self, account_ids: Optional[Union[int, List[int]]] = None):
         fig = PlotStyle.setup_plot_style()
         
-        # Get data for specific account
-        account_data = self.accounts_df[self.accounts_df['account_id'] == account_id]
+        # Get list of passed account ids
+        if account_ids is None:
+            account_ids = self.accounts_df['account_id'].unique()
+        elif isinstance(account_ids, int):
+            account_ids = [account_ids]
+        
+        colors = PlotStyle.get_colors(
+            self.accounts_df[self.accounts_df['account_id'].isin(account_ids)],
+            'account_id',
+            'Set2'
+        )
         
         # Create plot
         ax = PlotStyle.setup_axis(
             plt.subplot(1, 1, 1),
-            f'Account {account_id} Balance Over Time',
+            'Account Values Over Time',
             'Block Number',
             'Full Balance'
         )
         
-        # Plot balance
-        ax.plot(account_data['block'], 
-                account_data['market_value'],
-                color='cyan',
-                label='Full Balance')
+        # Plot account values
+        for idx, account_id in enumerate(account_ids):
+            account_data = self.accounts_df[self.accounts_df['account_id'] == account_id]
+            ax.plot(account_data['block'], 
+                    account_data['market_value'],
+                    color=colors[idx],
+                    label=f'Account {account_id}')
         
         PlotStyle.create_legend(ax)
         plt.tight_layout()
@@ -141,4 +149,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-Modified and reused code from the simulation notebook of Const. (Thank you) <3
+Modified and reused logic from a simulation notebook of Const. (Thank you) <3
